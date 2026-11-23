@@ -49,8 +49,14 @@ button{
 
 <button onclick="run()">EXECUTE</button>
 <button onclick="listen()">🎙️ SPEAK</button>
+<div id="messagePreview" style="display:none;background:#071b31;border:1px solid #38cfff;border-radius:15px;padding:18px;margin:20px 0;text-align:left">
+  <div style="color:#65dfff;font-size:12px;letter-spacing:2px">DISCORD MESSAGE PREVIEW</div>
+  <p id="recipientPreview"></p>
+  <p id="messageText" style="color:white;line-height:1.6"></p>
+  <button onclick="confirmDiscordMessage()">CONFIRM & COPY</button>
+  <button onclick="cancelDiscordMessage()">CANCEL</button>
+</div>
 
-<div id="reply">Welcome back, Sir. JARVIS is online.</div>
 
 <div class="panel">
 <div class="sub">QUICK ACCESS</div>
