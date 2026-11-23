@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#020817">
+<title>JARVIS AI</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;min-height:100vh;text-align:center;
+ background:radial-gradient(circle,#10365d,#020817 75%);
+ color:#72e5ff;font-family:Arial;padding:25px 16px;
+}
+h1{letter-spacing:8px;font-size:30px;margin-top:30px}
+.sub{font-size:11px;letter-spacing:3px;color:#70a9c8}
+.orb{
+ width:190px;height:190px;margin:45px auto 25px;
+ border:3px solid #38cfff;border-radius:50%;
+ display:grid;place-items:center;
+ box-shadow:0 0 25px #00aaff,inset 0 0 30px #008cff;
+ animation:pulse 2s infinite;
+}
+.orb span{font-size:65px}
+@keyframes pulse{50%{box-shadow:0 0 55px #00bfff,inset 0 0 45px #008cff}}
+input{
+ width:100%;padding:17px;border-radius:12px;
+ border:1px solid #38cfff;background:#071b31;
+ color:white;font-size:16px;margin:15px 0;
+}
+button{
+ padding:14px 17px;margin:5px;
+ border:1px solid #38cfff;border-radius:12px;
+ background:#092c4b;color:#a5edff;font-size:14px;
+}
+#reply{min-height:55px;line-height:1.6;margin:25px 0}
+.panel{border:1px solid #174d72;border-radius:15px;padding:15px;margin-top:25px}
+</style>
+</head>
+<body>
+<div class="sub">STARK INDUSTRIES</div>
+<h1>J.A.R.V.I.S.</h1>
+<div class="sub">PERSONAL AI SYSTEM v1.0</div>
+
+<div class="orb"><span>◉</span></div>
+<div class="sub">COMMAND CENTER</div>
+
+<input id="cmd" placeholder="Give me a command, Sir...">
+
+<button onclick="run()">EXECUTE</button>
+<button onclick="listen()">🎙️ SPEAK</button>
+
+<div id="reply">Welcome back, Sir. JARVIS is online.</div>
+
+<div class="panel">
+<div class="sub">QUICK ACCESS</div>
+<button onclick="openApp('discord')">DISCORD</button>
+<button onclick="openApp('whatsapp')">WHATSAPP</button>
+<button onclick="openApp('chatgpt')">CHATGPT</button>
+</div>
+
+<div class="sub" style="margin-top:35px">ALL SYSTEMS READY</div>
+
+<script>
+function speak(text){
+ document.getElementById('reply').innerText=text;
+ if(!window.speechSynthesis)return;
+ speechSynthesis.cancel();
+ let m=new SpeechSynthesisUtterance(text);
+ m.lang='en-IN';
+ m.rate=0.88;
+ let voices=speechSynthesis.getVoices();
+ let v=voices.find(x=>/male|david|daniel/i.test(x.name));
+ if(v)m.voice=v;
+ speechSynthesis.speak(m);
+}
+
+function openApp(app){
+ const urls={
+ discord:'https://discord.com/app',
+ whatsapp:'https://wa.me/',
+ chatgpt:'https://chatgpt.com/'
+ };
+ location.href=urls[app];
+}
+
+function run(){
+ let c=document.getElementById('cmd').value.trim();
+ let t=c.toLowerCase();
+
+ if(!c)return speak('Please give me a command, Sir.');
+
+ if(t.includes('time')){
+  speak('The time is '+new Date().toLocaleTimeString());
+ }
+ else if(t.includes('discord')){
+  speak('Opening Discord, Sir.');
+  setTimeout(()=>openApp('discord'),800);
+ }
+ else if(t.includes('whatsapp') && t.includes('message')){
+  let n=c.match(/\d{10,13}/);
+  let msg=c.match(/message\s+(.+)/i);
+  if(n && msg){
+   speak('Preparing your message, Sir.');
+   location.href='https://wa.me/'+n[0]+'?text='+encodeURIComponent(msg[1]);
+  }else{
+   speak('Please enter the phone number and message.');
+  }
+ }
+ else if(t.includes('call')){
+  let n=c.match(/\+?\d{10,13}/);
+  if(n){
+   speak('Opening phone dialer, Sir.');
+   location.href='tel:'+n[0];
+  }else speak('Please provide a phone number.');
+ }
+ else if(t.includes('chatgpt')){
+  speak('Opening ChatGPT.');
+  setTimeout(()=>openApp('chatgpt'),800);
+ }
+ else if(t.includes('hello')||t.includes('jarvis')){
+  speak('At your service, Sir.');
+ }
+ else{
+  speak('Command not recognised yet, Sir.');
+ }
+}
+
+function listen(){
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!SR){
+  speak('Voice recognition is not supported here. Please use your keyboard microphone.');
+  document.getElementById('cmd').focus();
+  return;
+ }
+ let r=new SR();
+ r.lang='en-IN';
+ r.onresult=e=>{
+  document.getElementById('cmd').value=e.results[0][0].transcript;
+  run();
+ };
+ r.onerror=()=>speak('I could not hear you, Sir.');
+ r.start();
+}
+
+if(window.speechSynthesis){
+ speechSynthesis.onvoiceschanged=()=>{};
+}
+</script>
+</body>
+</html>
