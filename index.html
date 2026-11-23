@@ -117,47 +117,88 @@ function openApp(app){
  location.href=urls[app];
 }
 
-function run(){
- let c=document.getElementById('cmd').value.trim();
- let t=c.toLowerCase();
+let pendingDiscordMessage = "";
 
- if(!c)return speak('Please give me a command, Sir.');
+function run() {
+  const c = document.getElementById('cmd').value.trim();
+  const t = c.toLowerCase();
 
- if(t.includes('time')){
-  speak('The time is '+new Date().toLocaleTimeString());
- }
- else if(t.includes('discord')){
-  speak('Opening Discord, Sir.');
-  setTimeout(()=>openApp('discord'),800);
- }
- else if(t.includes('whatsapp') && t.includes('message')){
-  let n=c.match(/\d{10,13}/);
-  let msg=c.match(/message\s+(.+)/i);
-  if(n && msg){
-   speak('Preparing your message, Sir.');
-   location.href='https://wa.me/'+n[0]+'?text='+encodeURIComponent(msg[1]);
-  }else{
-   speak('Please enter the phone number and message.');
+  if (!c) {
+    speak('Please give me a command, Sir.');
+    return;
   }
- }
- else if(t.includes('call')){
-  let n=c.match(/\+?\d{10,13}/);
-  if(n){
-   speak('Opening phone dialer, Sir.');
-   location.href='tel:'+n[0];
-  }else speak('Please provide a phone number.');
- }
- else if(t.includes('chatgpt')){
-  speak('Opening ChatGPT.');
-  setTimeout(()=>openApp('chatgpt'),800);
- }
- else if(t.includes('hello')||t.includes('jarvis')){
-  speak('At your service, Sir.');
- }
- else{
-  speak('Command not recognised yet, Sir.');
- }
+
+  if (t.includes('discord') && (t.includes('message') || t.includes('msg'))) {
+    const recipientMatch = c.match(/(?:mere\s+)?(.+?)\s+ko\s+discord/i);
+    const messageMatch = c.match(/(?:ki|that)\s+(.+)$/i);
+
+    if (!messageMatch) {
+      speak('Please tell me what message to prepare, Sir.');
+      return;
+    }
+
+    const recipient = recipientMatch
+      ? recipientMatch[1].replace(/^(jarvis|mere)\s+/i, '').trim()
+      : 'Select your Discord friend';
+
+    pendingDiscordMessage = messageMatch[1].trim();
+
+    document.getElementById('recipientPreview').innerText =
+      'Recipient: ' + recipient;
+
+    document.getElementById('messageText').innerText =
+      pendingDiscordMessage;
+
+    document.getElementById('messagePreview').style.display = 'block';
+
+    speak('Sir, I have prepared your Discord message. Please review and confirm.');
+    return;
+  }
+
+  if (t.includes('time')) {
+    speak('The time is ' + new Date().toLocaleTimeString());
+  }
+  else if (t.includes('discord')) {
+    speak('Opening Discord, Sir.');
+    openApp('discord');
+  }
+  else if (t.includes('call')) {
+    const n = c.match(/\+?\d{10,13}/);
+    if (n) {
+      speak('Opening phone dialer, Sir.');
+      location.href = 'tel:' + n[0];
+    } else {
+      speak('Please provide a phone number.');
+    }
+  }
+  else if (t.includes('chatgpt')) {
+    speak('Opening ChatGPT, Sir.');
+    openApp('chatgpt');
+  }
+  else {
+    speak('Command not recognised yet, Sir.');
+  }
 }
+
+async function confirmDiscordMessage() {
+  if (!pendingDiscordMessage) return;
+
+  try {
+    await navigator.clipboard.writeText(pendingDiscordMessage);
+    speak('Message copied, Sir. Opening Discord now.');
+    document.getElementById('messagePreview').style.display = 'none';
+    openApp('discord');
+  } catch (error) {
+    speak('Clipboard access failed. Please copy the message manually.');
+  }
+}
+
+function cancelDiscordMessage() {
+  pendingDiscordMessage = '';
+  document.getElementById('messagePreview').style.display = 'none';
+  speak('Message cancelled, Sir.');
+}
+
 
 function listen(){
  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
