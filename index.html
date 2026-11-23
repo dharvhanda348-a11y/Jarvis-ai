@@ -62,18 +62,45 @@ button{
 <div class="sub" style="margin-top:35px">ALL SYSTEMS READY</div>
 
 <script>
-function speak(text){
- document.getElementById('reply').innerText=text;
- if(!window.speechSynthesis)return;
- speechSynthesis.cancel();
- let m=new SpeechSynthesisUtterance(text);
- m.lang='en-IN';
- m.rate=0.88;
- let voices=speechSynthesis.getVoices();
- let v=voices.find(x=>/male|david|daniel/i.test(x.name));
- if(v)m.voice=v;
- speechSynthesis.speak(m);
+function speak(text) {
+  document.getElementById('reply').innerText = text;
+
+  if (!window.speechSynthesis) return;
+
+  const synth = window.speechSynthesis;
+  synth.cancel();
+
+  function playWithDaniel() {
+    const voices = synth.getVoices();
+
+    const voice =
+      voices.find(v => /Daniel.*Enhanced/i.test(v.name)) ||
+      voices.find(v => /Daniel/i.test(v.name));
+
+    const msg = new SpeechSynthesisUtterance(text);
+
+    if (voice) {
+      msg.voice = voice;
+      msg.lang = voice.lang;
+    } else {
+      msg.lang = 'en-GB';
+    }
+
+    msg.rate = 0.82;
+    msg.pitch = 0.78;
+    msg.volume = 1;
+
+    synth.speak(msg);
+  }
+
+  if (synth.getVoices().length) {
+    playWithDaniel();
+  } else {
+    synth.onvoiceschanged = playWithDaniel;
+    setTimeout(playWithDaniel, 700);
+  }
 }
+
 
 function openApp(app){
  const urls={
